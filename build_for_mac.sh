@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # Default values
 SYSROOT_PATH=""
 SHOW_HELP=false
