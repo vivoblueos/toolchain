@@ -1,0 +1,74 @@
+name: Build and release QEMU for the BlueOS kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag where built tarballs are storing to"
+        required: true
+        default: "v0.8.0"
+
+jobs:
+  build:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config ninja-build libslirp-dev wget meson libglib2.0-dev flex bison libfdt-dev
+
+      - name: Make sysroot directory
+        run: |
+          mkdir -p sysroot/usr/local
+
+      - name: Download QEMU tarball
+        run: |
+          wget https://download.qemu.org/qemu-10.0.3.tar.xz
+          tar xvf qemu-10.0.3.tar.xz
+          rm -v qemu-10.0.3.tar.xz
+
+      - name: Build and install
+        run: |
+          cd qemu-10.0.3
+          mkdir build
+          cd build
+          ../configure --prefix=${{ github.workspace }}/sysroot/usr/local --enable-slirp --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu
+          ninja install
+
+      - name: Create release tarball
+        run: |
+          tar cJvf qemu.tar.xz -C ${{ github.workspace }}/sysroot .
+
+      - name: Get release page
+        uses: octokit/request-action@v2.x
+        id: get_release_page
+        with:
+          route: GET /repos/vivoblueos/toolchain/releases/tags/${{ github.event.inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release url
+        id: get_release_url
+        run: |
+          url=$(echo "${RESP}" | jq -r '.upload_url')
+          echo "url=$url" >> $GITHUB_OUTPUT
+        env:
+          RESP: ${{ steps.get_release_page.outputs.data }}
+
+      - name: Get release date
+        id: get_release_date
+        run: echo "date_time=$(date '+%Y_%m_%d_%H_%M')" >> $GITHUB_ENV
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_url.outputs.url }}
+          asset_path: ./qemu.tar.xz
+          asset_name: qemu-${{ env.date_time }}.tar.xz
+          asset_content_type: application/x-tar
