@@ -1,0 +1,125 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build and release Rust toolchain for the BlueOS kernel
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag where built tarballs are storing to"
+        required: true
+        default: "v0.8.0"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Checkout libc
+        uses: actions/checkout@v4
+        with:
+          repository: vivoblueos/libc
+          ref: blueos-dev
+          path: libc
+
+      - name: Checkout cc-rs
+        uses: actions/checkout@v4
+        with:
+          repository: vivoblueos/cc-rs
+          ref: blueos-dev
+          path: cc-rs
+
+      - name: Checkout rust
+        uses: actions/checkout@v4
+        with:
+          repository: vivoblueos/rust
+          ref: blueos-dev
+          path: rust
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev pkg-config clang lld llvm
+
+      - name: Install Arm GNU toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: 14.2.Rel1
+
+      - name: Install Arm64 GNU toolchain
+        uses: lawkai-vivo/aarch64-none-elf-gcc-action@v1
+        with:
+          release: 14.2.Rel1
+
+      - name: Build Rust toolchain
+        env:
+          DESTDIR: ${{ github.workspace }}/sysroot
+          CARGO_NET_GIT_FETCH_WITH_CLI: true
+        run: |
+          mkdir -p ${DESTDIR}
+          cd rust
+          cp ${{ github.workspace }}/rust/config.blueos.toml config.toml
+          echo "Installing Rust toolchain to ${DESTDIR} ..."
+          ./x.py install -i --stage 1 compiler/rustc
+          ./x.py install -i --stage 1 library/std --target x86_64-unknown-linux-gnu
+          ./x.py install -i --stage 1 library/std --target thumbv7m-vivo-blueos-newlibeabi
+          ./x.py install -i --stage 1 library/std --target thumbv8m.main-vivo-blueos-newlibeabihf
+          ./x.py install -i --stage 1 library/std --target aarch64-vivo-blueos-newlib
+          ./x.py install -i --stage 1 library/std --target riscv64-vivo-blueos
+          ./x.py install -i --stage 1 library/std --target riscv32-vivo-blueos
+          ./x.py install -i --stage 1 library/std --target riscv32imc-vivo-blueos
+          ./x.py install -i --stage 0 rustfmt
+          ./x.py install -i --stage 0 rust-analyzer
+          ./x.py install -i --stage 0 clippy
+          ./x.py install -i --stage 0 llvm-tools
+
+      - name: Create tarball
+        run: |
+          tar cJvf blueos-toolchain.tar.xz -C ${{ github.workspace }}/sysroot .
+
+      - name: Get release page
+        uses: octokit/request-action@v2.x
+        id: get_release_page
+        with:
+          route: GET /repos/vivoblueos/toolchain/releases/tags/${{ github.event.inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release url
+        id: get_release_url
+        run: |
+          url=$(echo "${RESP}" | jq -r '.upload_url')
+          echo "url=$url" >> $GITHUB_OUTPUT
+        env:
+          RESP: ${{ steps.get_release_page.outputs.data }}
+
+      - name: Get release date
+        id: get_release_date
+        run: echo "date_time=$(date '+%Y_%m_%d_%H_%M')" >> $GITHUB_ENV
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_url.outputs.url }}
+          asset_path: ./blueos-toolchain.tar.xz
+          asset_name: blueos-toolchain-${{ env.date_time }}.tar.xz
+          asset_content_type: application/x-tar
