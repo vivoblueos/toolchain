@@ -16,7 +16,7 @@ FROM ubuntu:24.04
 
 # Install prerequisites.
 RUN apt update && \
-    apt install -y build-essential ninja-build cmake curl git wget libslirp-dev generated-ninja \
+    apt install -y build-essential ninja-build cmake curl git wget libslirp-dev generate-ninja \
                    python3 python3-pip meson pkg-config libssl-dev libglib2.0-dev flex bison \
                    libfdt-dev clang llvm lld unzip python3-kconfiglib
 # Install QEMU.
@@ -40,7 +40,7 @@ RUN wget https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/
 ENV PATH="/blueos-dev/sysroot/opt/arm-none-eabi/bin:/blueos-dev/sysroot/opt/aarch64-none-elf/bin:${PATH}"
 # Install repo.
 WORKDIR /tmp/build
-RUN curl -L -O repo https://storage.googleapis.com/git-repo-downloads/repo && chmod a+x repo && mv repo /blueos-dev/sysroot/usr/local/bin
+RUN curl -L -o repo https://storage.googleapis.com/git-repo-downloads/repo && chmod a+x repo && mv repo /blueos-dev/sysroot/usr/local/bin
 # Build Rust toolchain.
 ENV DESTDIR=/blueos-dev/sysroot
 RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/rust.git && \
