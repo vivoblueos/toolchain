@@ -89,6 +89,8 @@ jobs:
           ./x.py install -i --stage 0 rust-analyzer
           ./x.py install -i --stage 0 clippy
           ./x.py install -i --stage 0 llvm-tools
+          ./x.py install -i --stage 0 cargo
+          ./x.py install -i --stage 0 miri
 
       - name: Create tarball
         run: |
