@@ -18,7 +18,11 @@ jobs:
     permissions:
       contents: write
 
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -123,5 +127,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_url.outputs.url }}
           asset_path: ./blueos-toolchain.tar.xz
-          asset_name: blueos-toolchain-${{ env.date_time }}.tar.xz
+          asset_name: blueos-toolchain-${{ matrix.os }}-${{ env.date_time }}.tar.xz
           asset_content_type: application/x-tar
