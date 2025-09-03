@@ -95,8 +95,8 @@ jobs:
           ./x.py install -i --stage 0 llvm-tools
           ./x.py install -i --stage 0 cargo
           ./x.py install -i --stage 0 miri
-          MIRI_LIB_SRC=library MIRI_SYSROOT=${DESTDIR}/usr/local/lib/rustlib/x86_64-unknown-linux-gnu/miri-sysroot cargo miri setup 
-
+          PATH=${DESTDIR}/usr/local/bin:$PATH MIRI_LIB_SRC=library MIRI_SYSROOT=${DESTDIR}/usr/local/lib/rustlib/x86_64-unknown-linux-gnu/miri-sysroot cargo miri setup
+          
       - name: Create tarball
         run: |
           tar cJvf blueos-toolchain.tar.xz -C ${{ github.workspace }}/sysroot .
