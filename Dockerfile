@@ -59,6 +59,7 @@ RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblu
     ./x.py install -i --stage 0 rust-analyzer && \
     ./x.py install -i --stage 0 clippy && \
     ./x.py install -i --stage 0 llvm-tools
+RUN cargo install bindgen-cli@0.72.1 cbindgen@0.29.0
 ENV PATH="/blueos-dev/sysroot/usr/local/bin:${PATH}"
 # Clean up.
 WORKDIR /blueos-dev
