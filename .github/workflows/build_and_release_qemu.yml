@@ -36,7 +36,7 @@ jobs:
           cd qemu-10.0.3
           mkdir build
           cd build
-          ../configure --prefix=${{ github.workspace }}/sysroot/usr/local --enable-slirp --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu
+          ../configure --prefix=${{ github.workspace }}/sysroot/usr/local --enable-slirp --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu --enable-plugins
           ninja install
 
       - name: Create release tarball
