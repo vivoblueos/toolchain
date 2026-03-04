@@ -19,6 +19,7 @@ RUN apt update && \
     apt install -y build-essential ninja-build cmake curl git wget libslirp-dev generate-ninja \
                    python3 python3-pip meson pkg-config libssl-dev libglib2.0-dev flex bison \
                    libfdt-dev clang llvm lld unzip python3-kconfiglib
+RUN pip3 install esptool==4.7.0 --break-system-packages
 # Install QEMU.
 WORKDIR /tmp/build
 RUN wget https://download.qemu.org/qemu-10.0.3.tar.xz
@@ -61,6 +62,13 @@ RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblu
     ./x.py install -i --stage 0 llvm-tools
 RUN cargo install bindgen-cli@0.72.1 cbindgen@0.29.0
 ENV PATH="/blueos-dev/sysroot/usr/local/bin:${PATH}"
+# Install esp32 QEMU.
+RUN wget https://github.com/espressif/qemu/releases/download/esp-develop-9.2.2-20250817/qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -P /tmp/build
+WORKDIR /tmp/build
+RUN tar -xvf qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -C /opt
+WORKDIR /opt/qemu/bin
+RUN mv qemu-system-riscv32 qemu-esp32-riscv32
+ENV PATH="/opt/qemu/bin:${PATH}"
 # Clean up.
 WORKDIR /blueos-dev
 RUN rm -rf /tmp/build
