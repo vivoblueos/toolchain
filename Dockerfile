@@ -63,10 +63,12 @@ RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblu
 RUN cargo install bindgen-cli@0.72.1 cbindgen@0.29.0
 ENV PATH="/blueos-dev/sysroot/usr/local/bin:${PATH}"
 # Install esp32 QEMU.
-RUN wget https://github.com/espressif/qemu/releases/download/esp-develop-9.2.2-20250817/qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -P /blueos-dev/sysroot/usr/local
-WORKDIR /blueos-dev/sysroot/usr/local
-RUN tar -xvf qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -C /blueos-dev/sysroot/usr/local
-RUN ln -sfn /blueos-dev/sysroot/usr/local/qemu/bin/qemu-system-riscv32 /blueos-dev/sysroot/usr/local/bin/qemu-esp32-riscv32
+RUN wget https://github.com/espressif/qemu/releases/download/esp-develop-9.2.2-20250817/qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -P /tmp/build
+WORKDIR /tmp/build
+RUN tar -xvf qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -C /opt
+WORKDIR /opt/qemu/bin
+RUN mv qemu-system-riscv32 qemu-esp32-riscv32
+ENV PATH="/opt/qemu/bin:${PATH}"
 # Clean up.
 WORKDIR /blueos-dev
 RUN rm -rf /tmp/build
