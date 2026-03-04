@@ -28,6 +28,12 @@ WORKDIR /tmp/build/qemu-10.0.3/build
 RUN ../configure --prefix=/blueos-dev/sysroot/usr/local --enable-slirp \
     --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu && \
     ninja install
+# Install esp32 QEMU.
+RUN mkdir -p /esp-qemu
+WORKDIR /esp-qemu
+RUN wget https://github.com/espressif/qemu/releases/download/esp-develop-9.2.2-20250817/qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz
+RUN tar xvf qemu-riscv32-softmmu-esp_develop_9.2.2_20250817-x86_64-linux-gnu.tar.xz -C /esp-qemu
+RUN ln -sfn /esp-qemu/qemu/bin/qemu-system-riscv32 /usr/bin/qemu-esp32-riscv32
 # Install Arm toolchains.
 WORKDIR /tmp/build
 RUN mkdir -p /blueos-dev/sysroot/opt
