@@ -19,7 +19,7 @@ RUN apt update && \
     apt install -y build-essential ninja-build cmake curl git wget libslirp-dev generate-ninja \
     python3 python3-pip meson pkg-config libssl-dev libglib2.0-dev flex bison \
     libfdt-dev clang llvm lld unzip python3-kconfiglib
-RUN pip3 install esptool==4.7.0
+RUN pip3 install esptool==4.7.0 --break-system-packages
 # Install QEMU.
 WORKDIR /tmp/build
 RUN wget https://download.qemu.org/qemu-10.0.3.tar.xz
