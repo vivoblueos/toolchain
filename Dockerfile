@@ -17,15 +17,16 @@ FROM ubuntu:24.04
 # Install prerequisites.
 RUN apt update && \
     apt install -y build-essential ninja-build cmake curl git wget libslirp-dev generate-ninja \
-                   python3 python3-pip meson pkg-config libssl-dev libglib2.0-dev flex bison \
-                   libfdt-dev clang llvm lld unzip python3-kconfiglib
+    python3 python3-pip meson pkg-config libssl-dev libglib2.0-dev flex bison \
+    libfdt-dev clang llvm lld unzip python3-kconfiglib
+RUN pip3 install esptool==4.7.0
 # Install QEMU.
 WORKDIR /tmp/build
 RUN wget https://download.qemu.org/qemu-10.0.3.tar.xz
 RUN tar xvf qemu-10.0.3.tar.xz
 WORKDIR /tmp/build/qemu-10.0.3/build
 RUN ../configure --prefix=/blueos-dev/sysroot/usr/local --enable-slirp \
-                 --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu && \
+    --target-list=riscv32-softmmu,riscv64-softmmu,arm-softmmu,aarch64-softmmu && \
     ninja install
 # Install Arm toolchains.
 WORKDIR /tmp/build
