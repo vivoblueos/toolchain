@@ -25,7 +25,7 @@ jobs:
         run: |
           git clone --branch v5.5.3 --depth 1 https://github.com/espressif/esp-idf
           cd esp-idf
-          ./install.sh
+          ./install.sh esp32c3
           source ./export.sh
           cd examples/get-started/hello_world
           idf.py set-target esp32c3
@@ -63,6 +63,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release_url.outputs.url }}
-          asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/partition_table/partition_table.bin
-          asset_name: esp32c3-partition_table.bin
+          asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/partition_table/partition-table.bin
+          asset_name: esp32c3-partition-table.bin
           asset_content_type: application/octet-stream
