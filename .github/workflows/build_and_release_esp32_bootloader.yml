@@ -23,7 +23,7 @@ jobs:
       
       - name: Build and install
         run: |
-          git clone --branch release/v6.0 --depth 1 https://github.com/espressif/esp-idf
+          git clone --branch v5.5.3 --depth 1 https://github.com/espressif/esp-idf
           cd esp-idf
           ./install.sh
           source ./export.sh
