@@ -54,7 +54,7 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_url.outputs.url }}
           asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/bootloader/bootloader.bin
-          asset_name: bootloader.bin
+          asset_name: esp32c3-bootloader.bin
           asset_content_type: application/octet-stream
       
       - name: Upload partition_table.bin
