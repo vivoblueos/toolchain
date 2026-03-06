@@ -1,0 +1,68 @@
+name: Build and release Bootloader for the esp32 series Soc
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag where built tarballs are storing to"
+        required: true
+        default: "v0.8.0"
+
+jobs:
+  build:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config git
+      
+      - name: Build and install
+        run: |
+          git clone --branch v5.5.3 --depth 1 https://github.com/espressif/esp-idf
+          cd esp-idf
+          ./install.sh
+          source ./export.sh
+          cd examples/get-started/hello_world
+          idf.py set-target esp32c3
+          idf.py build
+
+      - name: Get release page
+        uses: octokit/request-action@v2.x
+        id: get_release_page
+        with:
+          route: GET /repos/vivoblueos/toolchain/releases/tags/${{ github.event.inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release url
+        id: get_release_url
+        run: |
+          url=$(echo "${RESP}" | jq -r '.upload_url')
+          echo "url=$url" >> $GITHUB_OUTPUT
+        env:
+          RESP: ${{ steps.get_release_page.outputs.data }}
+    
+      - name: Upload bootloader.bin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_url.outputs.url }}
+          asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/bootloader/bootloader.bin
+          asset_name: esp32c3-bootloader.bin
+          asset_content_type: application/octet-stream
+      
+      - name: Upload partition_table.bin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_url.outputs.url }}
+          asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/partition_table/partition_table.bin
+          asset_name: esp32c3-partition_table.bin
+          asset_content_type: application/octet-stream
