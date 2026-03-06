@@ -64,5 +64,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release_url.outputs.url }}
           asset_path: ${{ github.workspace }}/esp-idf/examples/get-started/hello_world/build/partition_table/partition_table.bin
-          asset_name: partition_table.bin
+          asset_name: esp32c3-partition_table.bin
           asset_content_type: application/octet-stream
