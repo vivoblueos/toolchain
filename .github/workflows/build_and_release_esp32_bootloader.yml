@@ -1,0 +1,26 @@
+name: Build and release Bootloader for the esp32 series Soc
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag where built tarballs are storing to"
+        required: true
+        default: "v0.8.0"
+
+jobs:
+  build:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config git
+          git clone https://github.com/espressif/esp-idf
+          cd esp-idf
+          ./install.sh
+
