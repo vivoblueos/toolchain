@@ -20,7 +20,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential pkg-config git
+      
+      - name: Build and install
+        run: |
           git clone https://github.com/espressif/esp-idf
           cd esp-idf
           ./install.sh
+          source ./export.sh
+          cd examples/get-started/hello_world
+          idf.py set-target esp32c3
+          idf.py build
+          
+
 
