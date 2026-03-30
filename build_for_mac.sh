@@ -132,18 +132,21 @@ git clone git@github.com:vivoblueos/cc-rs.git
 git clone git@github.com:vivoblueos/libc.git
 cd rust
 cp config.blueos.toml config.toml
-./x.py install -i --stage 1 compiler/rustc
-./x.py install -i --stage 1 library/std --target aarch64-vivo-blueos-newlib
-./x.py install -i --stage 1 library/std --target thumbv7m-vivo-blueos-newlibeabi
-./x.py install -i --stage 1 library/std --target thumbv8m.main-vivo-blueos-newlibeabihf
-./x.py install -i --stage 1 library/std --target riscv64-vivo-blueos
-./x.py install -i --stage 1 library/std --target riscv32-vivo-blueos
-./x.py install -i --stage 1 library/std --target riscv32imc-vivo-blueos
-./x.py install -i --stage 0 rustfmt
-./x.py install -i --stage 0 rust-analyzer
-./x.py install -i --stage 0 clippy
-./x.py install -i --stage 1 library/std --target aarch64-apple-darwin
-cp -av build/aarch64-apple-darwin/llvm/{bin,lib} ${DESTDIR}/usr/local
+./x.py install -i --stage 1 compiler/rustc && \
+./x.py install -i --stage 1 library/std --target aarch64-apple-darwin && \
+./x.py install -i --stage 1 library/std --target thumbv7m-vivo-blueos-newlibeabi && \
+./x.py install -i --stage 1 library/std --target thumbv8m.main-vivo-blueos-newlibeabihf && \
+./x.py install -i --stage 1 library/std --target aarch64-vivo-blueos-newlib && \
+./x.py install -i --stage 1 library/std --target riscv64-vivo-blueos && \
+./x.py install -i --stage 1 library/std --target riscv32-vivo-blueos && \
+./x.py install -i --stage 1 library/std --target riscv32imc-vivo-blueos && \
+./x.py install -i --stage 0 rustfmt && \
+./x.py install -i --stage 0 rust-analyzer && \
+./x.py install -i --stage 0 clippy && \
+./x.py install -i --stage 0 llvm-tools && \
+./x.py install -i --stage 0 cargo #&& \
+./x.py install -i --stage 0 miri
+PATH=${SYSROOT_PATH}/usr/local/bin:$PATH MIRI_LIB_SRC=library MIRI_SYSROOT=${SYSROOT_PATH}/usr/local/lib/rustlib/aarch64-apple-darwin/miri-sysroot cargo miri setup
 
 # export PATH
 export PATH=${DESTDIR}/usr/local/bin:$OPT_PATH/bin:$OPT_PATH/aarch64-none-elf/bin:$OPT_PATH/arm-none-eabi/bin:$PATH
