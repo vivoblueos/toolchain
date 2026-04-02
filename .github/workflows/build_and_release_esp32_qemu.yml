@@ -34,7 +34,7 @@ jobs:
           cd qemu
           mkdir build
           cd build
-          ../configure --target-list=riscv32-softmmu --enable-gcrypt --disable-werror
+          ../configure --prefix=${{ github.workspace }}/sysroot/usr/local --enable-slirp --target-list=riscv32-softmmu --enable-gcrypt --disable-werror --enable-plugins
           ninja install
 
       - name: Create release tarball
