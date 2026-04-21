@@ -27,7 +27,7 @@ jobs:
 
       - name: Download ESP32-QEMU
         run: |
-          git clone --depth 1 --branch bluekernel-develop https://github.com/vivoblueos/qemu.git
+          git clone --depth 1 https://github.com/espressif/qemu.git
         
       - name: Build and install
         run: |
