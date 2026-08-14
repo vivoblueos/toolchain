@@ -128,8 +128,6 @@ export DESTDIR=$SYSROOT_PATH
 mkdir -p $SYSROOT_PATH/src
 cd $SYSROOT_PATH/src
 git clone git@github.com:vivoblueos/rust.git
-git clone git@github.com:vivoblueos/cc-rs.git
-git clone git@github.com:vivoblueos/libc.git
 cd rust
 cp config.blueos.toml config.toml
 ./x.py install -i --stage 1 compiler/rustc && \

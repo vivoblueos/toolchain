@@ -45,8 +45,6 @@ RUN curl -L -o repo https://storage.googleapis.com/git-repo-downloads/repo && ch
 # Build Rust toolchain.
 ENV DESTDIR=/blueos-dev/sysroot
 RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/rust.git && \
-    git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/cc-rs.git && \
-    git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/libc.git && \
     cd rust && cp config.blueos.toml config.toml && \
     ./x.py install -i --stage 1 compiler/rustc && \
     ./x.py install -i --stage 1 library/std --target x86_64-unknown-linux-gnu && \

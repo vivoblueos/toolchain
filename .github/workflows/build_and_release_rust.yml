@@ -36,20 +36,6 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      - name: Checkout libc
-        uses: actions/checkout@v4
-        with:
-          repository: vivoblueos/libc
-          ref: blueos-dev
-          path: libc
-
-      - name: Checkout cc-rs
-        uses: actions/checkout@v4
-        with:
-          repository: vivoblueos/cc-rs
-          ref: blueos-dev
-          path: cc-rs
-
       - name: Checkout rust
         uses: actions/checkout@v4
         with:
