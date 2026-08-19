@@ -128,8 +128,6 @@ export DESTDIR=$SYSROOT_PATH
 mkdir -p $SYSROOT_PATH/src
 cd $SYSROOT_PATH/src
 git clone git@github.com:vivoblueos/rust.git
-git clone git@github.com:vivoblueos/cc-rs.git
-git clone git@github.com:vivoblueos/libc.git
 cd rust
 cp config.blueos.toml config.toml
 ./x.py install -i --stage 1 compiler/rustc && \
@@ -140,12 +138,12 @@ cp config.blueos.toml config.toml
 ./x.py install -i --stage 1 library/std --target riscv64-vivo-blueos && \
 ./x.py install -i --stage 1 library/std --target riscv32-vivo-blueos && \
 ./x.py install -i --stage 1 library/std --target riscv32imc-vivo-blueos && \
-./x.py install -i --stage 0 rustfmt && \
-./x.py install -i --stage 0 rust-analyzer && \
-./x.py install -i --stage 0 clippy && \
-./x.py install -i --stage 0 llvm-tools && \
-./x.py install -i --stage 0 cargo #&& \
-./x.py install -i --stage 0 miri
+./x.py install -i --stage 1 rustfmt && \
+./x.py install -i --stage 1 rust-analyzer && \
+./x.py install -i --stage 1 clippy && \
+./x.py install -i --stage 1 llvm-tools && \
+./x.py install -i --stage 1 cargo #&& \
+./x.py install -i --stage 1 miri
 PATH=${SYSROOT_PATH}/usr/local/bin:$PATH MIRI_LIB_SRC=library MIRI_SYSROOT=${SYSROOT_PATH}/usr/local/lib/rustlib/aarch64-apple-darwin/miri-sysroot cargo miri setup
 
 # export PATH

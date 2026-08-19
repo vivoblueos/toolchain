@@ -45,8 +45,6 @@ RUN curl -L -o repo https://storage.googleapis.com/git-repo-downloads/repo && ch
 # Build Rust toolchain.
 ENV DESTDIR=/blueos-dev/sysroot
 RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/rust.git && \
-    git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/cc-rs.git && \
-    git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblueos/libc.git && \
     cd rust && cp config.blueos.toml config.toml && \
     ./x.py install -i --stage 1 compiler/rustc && \
     ./x.py install -i --stage 1 library/std --target x86_64-unknown-linux-gnu && \
@@ -56,10 +54,10 @@ RUN git clone --depth=1 --single-branch -b blueos-dev https://github.com/vivoblu
     ./x.py install -i --stage 1 library/std --target riscv64-vivo-blueos && \
     ./x.py install -i --stage 1 library/std --target riscv32-vivo-blueos && \
     ./x.py install -i --stage 1 library/std --target riscv32imc-vivo-blueos && \
-    ./x.py install -i --stage 0 rustfmt && \
-    ./x.py install -i --stage 0 rust-analyzer && \
-    ./x.py install -i --stage 0 clippy && \
-    ./x.py install -i --stage 0 llvm-tools
+    ./x.py install -i --stage 1 rustfmt && \
+    ./x.py install -i --stage 1 rust-analyzer && \
+    ./x.py install -i --stage 1 clippy && \
+    ./x.py install -i --stage 1 llvm-tools
 RUN cargo install bindgen-cli@0.72.1 cbindgen@0.29.0
 ENV PATH="/blueos-dev/sysroot/usr/local/bin:${PATH}"
 # Install esp32 QEMU.
