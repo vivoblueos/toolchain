@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: vivoblueos/rust
-          ref: blueos-dev
+          ref: v1.96.0
           path: rust
 
       - name: Install packages
