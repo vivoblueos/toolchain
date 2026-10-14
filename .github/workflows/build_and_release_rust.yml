@@ -10,7 +10,12 @@ on:
       tag:
         description: "The tag where built tarballs are storing to"
         required: true
-        default: "v0.8.0"
+        default: "v0.9.0"
+
+# A new release run cancels the previous run, including all matrix jobs.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,13 +24,22 @@ jobs:
       contents: write
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04]
+        os: [ubuntu-latest, ubuntu-22.04, macos-latest]
+        include:
+          - os: ubuntu-latest
+            host_target: x86_64-unknown-linux-gnu
+          - os: ubuntu-22.04
+            host_target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            host_target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Free Disk Space (Ubuntu)
+        if: runner.os == 'Linux'
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
@@ -44,9 +58,18 @@ jobs:
           path: rust
 
       - name: Install packages
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libssl-dev pkg-config clang lld llvm
+
+      - name: Install packages (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja llvm pkg-config openssl@3 xz
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "PKG_CONFIG_PATH=$(brew --prefix openssl@3)/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "SDKROOT=$(xcrun --sdk macosx --show-sdk-path)" >> "$GITHUB_ENV"
 
       - name: Install Arm GNU toolchain
         uses: carlosperate/arm-none-eabi-gcc-action@v1
@@ -61,14 +84,17 @@ jobs:
       - name: Build Rust toolchain
         env:
           DESTDIR: ${{ github.workspace }}/sysroot
+          HOST_TARGET: ${{ matrix.host_target }}
           CARGO_NET_GIT_FETCH_WITH_CLI: true
         run: |
-          mkdir -p ${DESTDIR}
+          mkdir -p "${DESTDIR}"
           cd rust
-          cp ${{ github.workspace }}/rust/config.blueos.toml config.toml
+          cp config.blueos.toml config.toml
           echo "Installing Rust toolchain to ${DESTDIR} ..."
           ./x.py install -i --stage 1 compiler/rustc
-          ./x.py install -i --stage 1 library/std --target x86_64-unknown-linux-gnu
+          # Make the installed compiler and bundled rust-lld available for cross builds.
+          export PATH="${DESTDIR}/usr/local/bin:${DESTDIR}/usr/local/lib/rustlib/${HOST_TARGET}/bin:$PATH"
+          ./x.py install -i --stage 1 library/std --target "${HOST_TARGET}"
           ./x.py install -i --stage 1 library/std --target thumbv7m-none-eabi
           ./x.py install -i --stage 1 library/std --target thumbv8m.main-none-eabihf
           ./x.py install -i --stage 1 library/std --target thumbv7m-vivo-blueos-newlibeabi
@@ -83,8 +109,8 @@ jobs:
           ./x.py install -i --stage 1 llvm-tools
           ./x.py install -i --stage 1 cargo
           ./x.py install -i --stage 1 miri
-          PATH=${DESTDIR}/usr/local/bin:$PATH MIRI_LIB_SRC=library MIRI_SYSROOT=${DESTDIR}/usr/local/lib/rustlib/x86_64-unknown-linux-gnu/miri-sysroot cargo miri setup
-          
+          MIRI_LIB_SRC=library MIRI_SYSROOT="${DESTDIR}/usr/local/lib/rustlib/${HOST_TARGET}/miri-sysroot" cargo miri setup
+
       - name: Create tarball
         run: |
           tar cJvf blueos-toolchain.tar.xz -C ${{ github.workspace }}/sysroot .
